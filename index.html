@@ -20,6 +20,17 @@
 
   <!-- 1. SDK ВКонтакте и Одноклассников (VK Bridge) -->
   <script src="https://unpkg.com"></script>
+  <script>
+    (function () {
+      try {
+        if (window.vkBridge && typeof window.vkBridge.send === 'function') {
+          window.vkBridge.send('VKWebAppInit');
+        }
+      } catch (e) {
+        console.warn('VKWebAppInit warning:', e);
+      }
+    })();
+  </script>
 
   <!-- 2. SDK Яндекс Игр (подключается безопасно, если игра открыта в контуре Яндекса) -->
   <script>
@@ -110,14 +121,21 @@
   </div>
 
   <script>
-    // Скрываем прелоадер, как только Flutter отрисовал первый кадр приложения
-    window.addEventListener('flutter-first-frame', function () {
+    function hideLuxuryLoader() {
       var loader = document.getElementById('luxury-loader');
-      if (loader) {
+      if (loader && !loader.classList.contains('hidden')) {
         loader.classList.add('hidden');
-        setTimeout(function () { loader.remove(); }, 500);
+        setTimeout(function () {
+          if (loader.parentNode) loader.remove();
+        }, 500);
       }
-    });
+    }
+
+    // Скрываем прелоадер, как только Flutter отрисовал первый кадр приложения
+    window.addEventListener('flutter-first-frame', hideLuxuryLoader);
+
+    // Резервный таймер на случай, если событие первого кадра прошло раньше подписки
+    setTimeout(hideLuxuryLoader, 8000);
 
     // Блокируем контекстное меню браузера при долгом нажатии на экран
     window.addEventListener('contextmenu', function (e) {
