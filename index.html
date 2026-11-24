@@ -19,9 +19,9 @@
   <link rel="manifest" href="manifest.json">
 
   <!-- 1. SDK ВКонтакте и Одноклассников (VK Bridge) -->
-  <script src="https://unpkg.com"></script>
+  <script src="vk_bridge.min.js"></script>
   <script>
-    (function () {
+    function initVkBridge() {
       try {
         if (window.vkBridge && typeof window.vkBridge.send === 'function') {
           window.vkBridge.send('VKWebAppInit');
@@ -29,7 +29,8 @@
       } catch (e) {
         console.warn('VKWebAppInit warning:', e);
       }
-    })();
+    }
+    initVkBridge();
   </script>
 
   <!-- 2. SDK Яндекс Игр (подключается безопасно, если игра открыта в контуре Яндекса) -->
@@ -122,6 +123,7 @@
 
   <script>
     function hideLuxuryLoader() {
+      initVkBridge();
       var loader = document.getElementById('luxury-loader');
       if (loader && !loader.classList.contains('hidden')) {
         loader.classList.add('hidden');
