@@ -46,6 +46,42 @@
     })();
   </script>
 
+  <!-- 3. Разблокировка WebAudio в iOS Safari при первом касании -->
+  <script>
+    (function () {
+      window.__iosAudioUnlocked = false;
+      function unlockIOSAudio() {
+        if (window.__iosAudioUnlocked) return;
+        try {
+          var AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            if (!window.__sharedAudioCtx) {
+              window.__sharedAudioCtx = new AudioCtx();
+            }
+            if (window.__sharedAudioCtx.state === 'suspended') {
+              window.__sharedAudioCtx.resume();
+            }
+            var buffer = window.__sharedAudioCtx.createBuffer(1, 1, 22050);
+            var source = window.__sharedAudioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(window.__sharedAudioCtx.destination);
+            source.start(0);
+          }
+          window.__iosAudioUnlocked = true;
+          window.dispatchEvent(new Event('ios-audio-unlocked'));
+          window.removeEventListener('touchstart', unlockIOSAudio, true);
+          window.removeEventListener('pointerdown', unlockIOSAudio, true);
+          window.removeEventListener('click', unlockIOSAudio, true);
+        } catch (e) {
+          console.warn('iOS audio unlock warning:', e);
+        }
+      }
+      window.addEventListener('touchstart', unlockIOSAudio, true);
+      window.addEventListener('pointerdown', unlockIOSAudio, true);
+      window.addEventListener('click', unlockIOSAudio, true);
+    })();
+  </script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -60,9 +96,19 @@
       padding: 0;
       width: 100%;
       height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
       overflow: hidden;
+      overscroll-behavior: none;
       background-color: #F7F3EE;
+      padding-bottom: env(safe-area-inset-bottom);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    flt-glass-pane, flutter-view {
+      width: 100% !important;
+      height: 100% !important;
+      max-height: 100dvh !important;
     }
 
     /* Эстетичный экран загрузки «Тихая роскошь» до старта Flutter Web */
